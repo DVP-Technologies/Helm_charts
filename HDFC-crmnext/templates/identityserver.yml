@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: businessnext-identityserver
+spec:
+  replicas: {{.Values.commonLabels.replicaCount }}
+  selector:
+    matchLabels:
+      app: businessnext-identityserver
+  template:
+    metadata:
+      labels:
+        app: businessnext-identityserver
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: cattle.io/os
+        operator: Equal
+        value: windows
+      containers:
+      - name: businessnext-identityserver
+        image: {{.Values.identityserver.containers.image }}
+        env:
+        - name: APPSETTING_AbsoluteRefreshTokenLifetime
+          value: {{.Values.identityserver.containers.env.values_APPSETTING_AbsoluteRefreshTokenLifetime}}
+        - name: APPSETTING_AccessTokenLifetime
+          value: {{.Values.identityserver.containers.env.values_APPSETTING_AccessTokenLifetime}}
+        - name: APPSETTING_CDNCSSPath
+          value: {{.Values.identityserver.containers.env.values}}/css
+        - name: APPSETTING_CDNImagePath
+          value: {{.Values.identityserver.containers.env.values}}/img
+        - name: APPSETTING_CDNJavascript
+          value: {{.Values.identityserver.containers.env.values}}/js
+        - name: APPSETTING_Multitenancy
+          value: {{.Values.identityserver.containers.env.values_APPSETTING_Multitenancy}}
+        - name: APPSETTING_RootPath
+          value: {{.Values.identityserver.containers.env.values_APPSETTING_Rootpath}}
+        - name: APPSETTING_Securedlogin
+          value: {{.Values.identityserver.containers.env.values_APPSETTING_Securedlogin}}
+        - name: APPSETTING_SlidingRefreshTokenLifetime
+          value: {{.Values.identityserver.containers.env.values_APPSETTING_SlidingRefreshTokenLifetime}}
+        - name: APP_ENABLEHTTPS
+          value: {{.Values.identityserver.containers.env.values_APP_ENABLEHTTPS}}
+        - name: APP_NAME
+          value: {{.Values.identityserver.containers.env.values_APP_NAME}}
+        envFrom:
+        - secretRef:
+              name: {{.Values.identityserver.containers.envForm.secretRef.name}}
+      imagePullSecrets:
+      - name: {{.Values.identityserver.containers.imagePullSecrets.name}}
+      
+apiVersion: v1
+kind: Service
+metadata:
+  name: businessnext-identityserver
+spec:
+  selector:
+    app: businessnext-identityserver
+  type: {{.Values.identityserver_service.type}}
+  ports:
+    - name: {{.Values.identityserver_service.ports.name}}
+      port: {{.Values.identityserver_service.ports.port }}
+      targetPort: {{.Values.identityserver_service.ports.targetport }}
+      protocol: TCP

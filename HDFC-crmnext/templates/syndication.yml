@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: businessnext-syndication
+spec:
+  replicas: {{ .Values.syndication.replicaCount }}
+  selector:
+    matchLabels:
+      app: businessnext-syndication
+  template:
+    metadata:
+      labels:
+        app: businessnext-syndication
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: cattle.io/os
+        operator: Equal
+        value: windows
+      containers:
+      - name: businessnext-syndication
+        image: {{.Values.syndication.containers.image}}
+        env:
+            - name: APPSETTING_Multitenancy
+              value: {{.Values.syndication.containers.env.values_APPSETTING_Multitenancy}}
+            - name: APP_NAME
+              value: {{.Values.syndication.containers.env.values_APP_NAME}}
+            - name: APPSETTING_EnableCallStack
+              value: {{.Values.syndication.containers.env.values_APPSETTING_EnableCallStack}}
+        envFrom:
+        - secretRef:
+              name: {{ .Values.syndication.containers.envFrom.secretRef.name }}
+      imagePullSecrets:
+      - name: {{.Values.syndication.imagePullSecrets.name}}

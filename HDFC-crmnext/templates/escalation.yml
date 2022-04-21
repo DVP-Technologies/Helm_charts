@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: businessnext-escalation
+spec:
+  replicas: {{.Values.commonLabels.replicaCount}} #change
+  selector:
+    matchLabels:
+      app: businessnext-escalation
+  template:
+    metadata:
+      labels:
+        app: businessnext-escalation
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: cattle.io/os
+        operator: Equal
+        value: windows
+      containers:
+      - name: businessnext-escalation
+        image: {{ .Values.escalation.containers.image }} #change
+        env: 
+            - name: APPSETTING_Multitenancy
+              value: {{ .Values.escalation.containers.env.values_APPSETTING_Multitenancy}} #change
+            - name: APPSETTING_ShowWinform
+              value: {{ .Values.escalation.containers.env.values_APPSETTING_ShowWinform}} #change
+            - name: APP_NAME
+              value: {{ .Values.escalation.containers.env.values_APP_NAME }} #change
+        envFrom:
+        - secretRef:
+              name: {{ .Values.escalation.containers.envFrom.secretRef.name }}  #change
+      imagePullSecrets:
+      - name: {{ .Values.commonLabels.imagePullSecrets.name }} #change  #change

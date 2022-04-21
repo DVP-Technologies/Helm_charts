@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: businessnext-scriptutility
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: scriptutility
+  template:
+    metadata:
+      labels:
+        app: scriptutility
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: cattle.io/os
+        operator: Equal
+        value: windows
+      containers:
+      - name: businessnext-scriptutility
+        image: {{ .Values.scriptutility.containers.image }} 
+        env:
+            - name: App_Version
+              value: 10.19.8
+            - name: AllowPartialCommit
+              value: 'true'
+        envFrom:
+          - secretRef:
+              name: hdfc-mobile-demo-secret
+      imagePullSecrets:
+      - name: {{.Values.app.imagePullSecrets.name}}

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: businessnext-outlook-deployment
+spec:
+  replicas: {{.Values.outlook.replicaCount}}
+  selector:
+    matchLabels:
+      app: businessnext-outlook
+  template:
+    metadata:
+      labels:
+        app: businessnext-outlook
+    spec:
+     tolerations:
+     - effect: NoSchedule
+       key: cattle.io/os
+       operator: Equal
+       value: windows
+     containers:
+     - name: businessnext-outlook
+       image: {{.Values.outlook.containers.image}}
+       env:
+       - name: APPSETTING_CDNCSSPath
+         value: {{.Values.outlook.containers.env.values}}/css
+       - name: APPSETTING_CDNImagePath
+         value: {{.Values.outlook.containers.env.values}}/img
+       - name: APPSETTING_CDNJavascript
+         value: {{.Values.outlook.containers.env.values}}/js
+       - name: APPSETTING_RootPath
+         value: {{.Values.outlook.containers.env.values_APPSETTING_RootPath}}
+       - name: APPSETTING_DesktopView
+         value: {{.Values.outlook.containers.env.values_APPSETTING_DesktopView}}
+       - name: APP_ASSETSFOLDER
+         value: {{.Values.outlook.containers.env.values_APP_ASSETSFOLDER}}   
+       - name: APPSETTING_IsHybridTwo
+         value: {{.Values.outlook.containers.env.values_APPSETTING_IsHybridTwo}}
+       - name: APPSETTING_CheckMobileDeviceForLogin
+         value: {{.Values.outlook.containers.env.values_APPSETTING_CheckMobileDeviceForLogin}}
+       - name: APP_NAME
+         value: {{.Values.outlook.containers.env.values_APP_NAME}}
+       - name: API_NAME
+         value: {{.Values.outlook.containers.env.values_API_NAME}}
+       - name: APPSETTING_IsOutlook365
+         value: {{.Values.outlook.containers.env.values_APPSETTING_IsOutlook365}}  
+       - name: APPSETTING_ServiceURI
+         value: {{.Values.outlook.containers.env.values_APPSETTING_ServiceURI}}
+       - name: APPSETTING_SecuredLogin
+         value: {{.Values.outlook.containers.env.values_APPSETTING_SecuredLogin}}
+       - name: APP_ENABLEHTTPS
+         value: {{.Values.outlook.containers.env.values_APP_ENABLEHTTPS}}    
+       - name: APPSETTING_Multitenancy
+         value: {{.Values.outlook.containers.env.values_APPSETTING_Multitenancy}}
+       envFrom:
+       - secretRef:
+             name: {{.Values.outlook.containers.envFrom.secretRef.name}}
+     imagePullSecrets:
+     - name: {{.Values.outlook.imagePullSecrets.name}}
+
+apiVersion: v1
+kind: Service
+metadata:
+   name: businessnext-outlook-service
+spec:
+   selector:
+     app: businessnext-outlook
+   type: {{.Values.outlook_service.type}}
+   ports:
+     - name: {{.Values.outlook_service.ports.name}}
+       port: {{.Values.outlook_service.ports.port}}
+       targetPort: {{.Values.outlook_service.ports.targetport}}
+       protocol: TCP

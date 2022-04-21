@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: businessnext-app
+spec:
+  replicas: {{.Values.commonLabels.replicaCount}} 
+  selector:
+    matchLabels:
+      app: businessnext-app
+  template:
+    metadata:
+      labels:
+        app: businessnext-app
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: cattle.io/os
+        operator: Equal
+        value: windows
+      containers:
+      - name: crmnextapp
+        image: {{.Values.app.containers.image }}
+        env:
+        - name: APP_ASSETSFOLDER
+          value: {{ .Values.app.env.assets }}     #changes
+        - name: APPSETTING_CDNCSSPath
+          value: {{.Values.app.env.fullvalue }}/css    
+        - name: APPSETTING_CDNImagePath
+          value: {{.Values.app.env.fullvalue }}/img
+        - name: APPSETTING_CDNJavascript
+          value: {{.Values.app.env.fullvalue }}/js
+        - name: APPSETTING_RootPath
+          value: {{.Values.app.env.value }}
+        - name: APPSETTING_Securedlogin
+          value: "true"
+        - name: APP_ENABLEHTTPS
+          value: "true"
+        - name: APP_NAME
+          value: {{.Values.app.env.value}}
+        envFrom:
+          - secretRef:
+              name: {{.Values.app.secretRef.name}}
+      imagePullSecrets:
+      - name: {{.Values.commonLabels.imagePullSecrets.name}}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: businessnext-app
+spec:
+  selector:
+    app: businessnext-app
+  type: {{.Values.app_service.type1 }}            #changes
+  ports: 
+    - name: {{.Values.app_service.ports.name }} #changes
+      port: {{.Values.app_service.ports.port }}  #changes
+      targetPort: {{.Values.app_service.ports.targetport }}   #changes
+      protocol: TCP

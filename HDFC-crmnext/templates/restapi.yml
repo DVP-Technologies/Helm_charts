@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: businessnext-restapi
+spec:
+  replicas: {{.Values.restapi.replicaCount}}
+  selector:
+    matchLabels:
+      app: businessnext-restapi
+  template:
+    metadata:
+      labels:
+        app: businessnext-restapi
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: cattle.io/os
+        operator: Equal
+        value: windows
+      containers:
+      - name: businessnext-restapi
+        image: {{.Values.restapi.containers.image}}
+        env:
+        - name: APPSETTING_IdentityServerVirtualDirectoryName
+          value: {{.Values.restapi.containers.env.values_APPSETTING_IdentityServerVirtualDirectoryName}}
+        - name: APPSETTING_Multitenancy
+          value: {{.Values.restapi.containers.env.values_APPSETTING_Multitenancy}}
+        - name: APPSETTING_RootPath
+          value: {{.Values.restapi.containers.env.values_APPSETTING_RootPath}}
+        - name: APPSETTING_Securedlogin
+          value: {{.Values.restapi.containers.env.values_APPSETTING_Securedlogin}}
+        - name: APP_ENABLEHTTPS
+          value: {{.Values.restapi.containers.env.values_APP_ENABLEHTTPS}}
+        - name: APP_NAME
+          value: {{.Values.restapi.containers.env.values_APP_NAME}}
+        envFrom:
+        - secretRef:
+              name: {{.Values.restapi.containers.envFrom.secretRef.name}}
+      imagePullSecrets:
+      - name: {{.Values.restapi.imagePullSecrets.name}}              
+     
+
+apiVersion: v1
+kind: Service
+metadata:
+   name: businessnext-restapi
+spec:
+  selector:
+    app: businessnext-restapi
+  type: {{.Values.restapi_service.type}}
+  ports:
+    - name: {{.Values.restapi_service.ports.name}}
+      port: {{.Values.restapi_service.ports.port}}
+      targetPort: {{.Values.restapi_service.ports.targetport}}
+      protocol: TCP
+

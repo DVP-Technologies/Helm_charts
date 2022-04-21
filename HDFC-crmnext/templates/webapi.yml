@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: businessnext-webapi
+spec:
+  replicas: {{.Values.webapi.replicaCount}}
+  selector:
+    matchLabels:
+      app: businessnext-webapi
+  template:
+    metadata:
+      labels:
+        app: businessnext-webapi
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: cattle.io/os
+        operator: Equal
+        value: windows
+      containers:
+      - name: businessnext-webapi
+        image: {{.Values.webapi.containers.image}}
+        env:
+            - name: APPSETTING_Multitenancy
+              value: {{.Values.webapi.containers.env.values_APPSETTING_Multitenancy}}
+            - name: APP_NAME
+              value: {{ .Values.webapi.containers.env.values_APPNAME }}
+            - name: APP_REDIRECTIONURL
+              value: {{.Values.webapi.containers.env.values_APP_REDIRECTIONURL}}
+            - name: APP_ENABLEHTTPS
+              value: {{.Values.webapi.containers.env.values_APP_ENABLEHTTPS}}
+            - name: APPSETTING_Securedlogin
+              value:  {{.Values.webapi.containers.env.values_APPSETTING_Securedlogin}}
+        envFrom:
+        - secretRef:
+              name: {{.Values.webapi.containers.envFrom.secretRef.name}}
+      imagePullSecrets:
+      - name: {{.Values.webapi.imagePullSecrets.name}}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: businessnext-webapi
+spec:
+  selector:
+    app: businessnext-webapi
+  type: {{.Values.webapi_service.type}}
+  ports:
+    - name: {{.Values.webapi_service.ports.name}}
+      port: {{.Values.webapi_service.ports.port}}
+      targetPort: {{.Values.webapi_service.ports.targetPort}}
+      protocol: TCP
+
+        

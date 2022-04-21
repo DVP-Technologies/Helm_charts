@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: businessnext-mobile
+spec:
+  replicas: {{.Values.mobile.replicaCount}}
+  selector:
+    matchLabels:
+      app: businessnext-mobile
+  template:
+    metadata:
+      labels:
+        app: businessnext-mobile
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: cattle.io/os
+        operator: Equal
+        value: windows
+      containers:
+      - name: businessnext-mobile
+        image: {{.Values.mobile.containers.image}}
+        env:
+            - name: APPSETTING_CDNCSSPath
+              value: {{.Values.mobile.containers.env.values}}/css
+            - name: APPSETTING_CDNImagePath
+              value: {{.Values.mobile.containers.env.values}}/img
+            - name: APPSETTING_CDNJavascript
+              value: {{.Values.mobile.containers.env.values}}/js
+            - name: APPSETTING_CheckMobileDeviceForLogin
+              value: {{.Values.mobile.containers.env.values_APPSETTING_CheckMobileDeviceForLogin}}
+            - name: APPSETTING_IsHybridTwo
+              value: {{.Values.mobile.containers.env.values_APPSETTING_IsHybridTwo}}
+            - name: APPSETTING_RestApiDeploymentUrl
+              value: {{.Values.mobile.containers.env.values_APPSETTING_RestApiDeploymentUrl}}
+            - name: APPSETTING_RootPath
+              value: {{.Values.mobile.containers.env.values_APPSETTING_RootPath}}
+            - name: APPSETTING_Securedlogin
+              value: {{.Values.mobile.containers.env.values_APPSETTING_Securedlogin}}
+            - name: APP_ASSETSFOLDER
+              value: {{.Values.mobile.containers.env.values_APP_ASSETSFOLDER}}
+            - name: APP_ENABLEHTTPS
+              value: {{.Values.mobile.containers.env.values_APP_ENABLEHTTPS}}
+            - name: APP_NAME
+              value: {{.Values.mobile.containers.env.values_APP_NAME}}
+        envFrom:
+        - secretRef:
+              name: {{.Values.mobile.containers.envFrom.secretRef.name}}
+      imagePullSecrets:
+      - name: {{.Values.mobile.imagePullSecrets.name}}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: businessnext-mobile
+spec:
+  selector:
+    app: businessnext-mobile
+  type: {{.Values.mobile_service.type}}
+  ports:
+    - name: {{.Values.mobile_service.ports.name}}
+      port: {{.Values.mobile_service.ports.port}}
+      targetPort: {{.Values.mobile_service.ports.targetport}}
+      protocol: TCP

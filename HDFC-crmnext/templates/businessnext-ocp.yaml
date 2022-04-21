@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: businessnext-ocp
+spec:
+  replicas: {{.Values.commonLabels.replicaCount}}  #change
+  selector:
+    matchLabels:
+      app: businessnext-ocp
+  template:
+    metadata:
+      labels:
+        app: businessnext-ocp
+    spec:
+      containers:
+      - env:
+        - name: APPSETTING_OwnerId
+          value: {{.Values.businessnextocp.containers.env.values_APPSETTING_OwnerId}} #change
+        - name: APP_ENABLEHTTPS
+          value: {{.Values.businessnextocp.containers.env.values_APP_ENABLEHTTPS}}   #change
+        - name: APP_NAME
+          value: {{.Values.businessnextocp.containers.env.values_APP_NAME}}   #change
+        envFrom:
+        - secretRef:
+            name: {{.Values.businessnextocp.containers.envFrom.secretRef.name}} #change
+        image: {{.Values.businessnextocp.containers.image}} #change
+        name: businessnext-ocp
+      imagePullSecrets:
+      - name: {{.Values.businessnextocp.containers.imagePullSecrets.name }} #change
+      tolerations:
+      - effect: NoSchedule
+        key: cattle.io/os
+        operator: Equal
+        value: windows
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: businessnext-ocp
+spec:
+  selector:
+    app: businessnext-ocp
+  type: {{ .Values.businessnextocp_service.type }}            #changes
+  ports: 
+    - name: {{.Values.businessnextocp_service.ports.name }} #changes
+      port: {{.Values.businessnextocp_service.ports.port }}  #changes
+      targetPort: {{.Values.businessnextocp_service.ports.targetport }}   #changes
+      protocol: TCP
